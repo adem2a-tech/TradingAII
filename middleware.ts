@@ -19,7 +19,9 @@ export default auth((req) => {
 
   if (!req.auth && !isPublic) {
     if (isApi) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
-    return NextResponse.redirect(new URL('/', req.url))
+    const login = new URL('/login', req.url)
+    login.searchParams.set('callbackUrl', path)
+    return NextResponse.redirect(login)
   }
 })
 

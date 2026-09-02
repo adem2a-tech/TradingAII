@@ -2,12 +2,20 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { getSession, signIn, useSession } from 'next-auth/react'
 import { Loader2 } from 'lucide-react'
 import { useToast } from '@/components/toast'
 import { loadDeviceProfile, saveDeviceProfile } from '@/lib/storage/device-profile'
 
+function safeCallback(raw: string | null) {
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return '/analyze'
+  return raw
+}
+
 export function LoginForm() {
+  const searchParams = useSearchParams()
+  const callbackUrl = safeCallback(searchParams.get('callbackUrl'))
   const { toast } = useToast()
   const { data: session, status } = useSession()
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -19,7 +27,7 @@ export function LoginForm() {
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
-      window.location.replace('/analyze')
+      window.location.replace(callbackUrl)
       return
     }
     const profile = loadDeviceProfile()
@@ -29,7 +37,7 @@ export function LoginForm() {
       setReturningName(profile.name.split(' ')[0])
       setMode('login')
     }
-  }, [status, session])
+  }, [status, session, callbackUrl])
 
   const submitCredentials = async () => {
     if (!email || !password) {
@@ -41,20 +49,38 @@ export function LoginForm() {
       return
     }
     setLoading(true)
+    const displayName = name || email.split('@')[0]
+
     const res = await signIn('credentials', {
-      email, password, name, action: mode,
+      email,
+      password,
+      name,
+      action: mode,
       redirect: false,
+      callbackUrl,
     })
-    setLoading(false)
-    if (res?.error) {
+
+    if (res?.error || !res?.ok) {
+      setLoading(false)
       toast(mode === 'register' ? 'Inscription impossible (email déjà utilisé ?)' : 'Email ou mot de passe incorrect')
       return
     }
-    const displayName = name || email.split('@')[0]
+
     saveDeviceProfile({ email, name: displayName })
     toast(`Bonjour ${displayName} ! 👋`)
-    await getSession()
-    window.location.assign('/analyze')
+
+    // Attendre que le cookie session soit bien posé (fix mobile / Vercel)
+    for (let i = 0; i < 8; i++) {
+      const s = await getSession()
+      if (s?.user) {
+        window.location.href = res.url ?? callbackUrl
+        return
+      }
+      await new Promise((r) => setTimeout(r, 150))
+    }
+
+    setLoading(false)
+    toast('Session non active — ajoute AUTH_SECRET dans les variables Vercel')
   }
 
   return (
