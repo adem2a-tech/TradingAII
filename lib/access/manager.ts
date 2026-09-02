@@ -3,8 +3,9 @@ import path from 'path'
 import { getStripe } from '../stripe'
 import type { AccessRecord, AccessStatus } from './types'
 import { FREE_COOLDOWN_MS, PROMO_CODE, formatWaitUntil } from './types'
+import { getDataSubdir } from '../storage/data-root'
 
-const DIR = path.join(process.cwd(), 'data', 'access')
+const DIR = getDataSubdir('access')
 
 async function ensureDir() {
   await fs.mkdir(DIR, { recursive: true })

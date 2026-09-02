@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { getSession, signIn, useSession } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { Loader2 } from 'lucide-react'
 import { useToast } from '@/components/toast'
 import { loadDeviceProfile, saveDeviceProfile } from '@/lib/storage/device-profile'
@@ -52,7 +52,7 @@ export function LoginForm() {
     const displayName = name || email.split('@')[0]
 
     const res = await signIn('credentials', {
-      email,
+      email: email.trim(),
       password,
       name,
       action: mode,
@@ -60,27 +60,19 @@ export function LoginForm() {
       callbackUrl,
     })
 
-    if (res?.error || !res?.ok) {
+    if (res?.error) {
       setLoading(false)
-      toast(mode === 'register' ? 'Inscription impossible (email déjà utilisé ?)' : 'Email ou mot de passe incorrect')
+      toast(
+        mode === 'register'
+          ? 'Inscription impossible — email déjà pris ou erreur serveur'
+          : 'Email ou mot de passe incorrect',
+      )
       return
     }
 
-    saveDeviceProfile({ email, name: displayName })
+    saveDeviceProfile({ email: email.trim(), name: displayName })
     toast(`Bonjour ${displayName} ! 👋`)
-
-    // Attendre que le cookie session soit bien posé (fix mobile / Vercel)
-    for (let i = 0; i < 8; i++) {
-      const s = await getSession()
-      if (s?.user) {
-        window.location.href = res.url ?? callbackUrl
-        return
-      }
-      await new Promise((r) => setTimeout(r, 150))
-    }
-
-    setLoading(false)
-    toast('Session non active — ajoute AUTH_SECRET dans les variables Vercel')
+    window.location.assign(res?.url ?? callbackUrl)
   }
 
   return (

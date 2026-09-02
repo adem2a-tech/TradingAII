@@ -3,9 +3,10 @@ import { promisify } from 'util'
 import { promises as fs } from 'fs'
 import path from 'path'
 import type { UserRecord } from './users'
+import { getDataSubdir } from '../storage/data-root'
 
 const scryptAsync = promisify(scrypt)
-const DIR = path.join(process.cwd(), 'data', 'users')
+const DIR = getDataSubdir('users')
 
 async function ensureDir() {
   await fs.mkdir(DIR, { recursive: true })

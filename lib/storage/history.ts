@@ -1,8 +1,9 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import type { AnalysisRecord } from '../types'
+import { getDataSubdir } from './data-root'
 
-const DATA_DIR = path.join(process.cwd(), 'data', 'history')
+const DATA_DIR = getDataSubdir('history')
 
 async function ensureStore() {
   await fs.mkdir(DATA_DIR, { recursive: true })

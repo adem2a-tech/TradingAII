@@ -15,19 +15,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         action: { label: 'Action', type: 'text' },
       },
       async authorize(credentials) {
-        const email = String(credentials?.email || '')
-        const password = String(credentials?.password || '')
-        const action = String(credentials?.action || 'login')
+        try {
+          const email = String(credentials?.email || '').trim()
+          const password = String(credentials?.password || '')
+          const action = String(credentials?.action || 'login')
 
-        if (action === 'register') {
-          const name = String(credentials?.name || '')
-          const user = await createUser({ email, name, password, provider: 'credentials' })
+          if (!email || !password) return null
+
+          if (action === 'register') {
+            const name = String(credentials?.name || '')
+            const user = await createUser({ email, name, password, provider: 'credentials' })
+            return { id: user.id, email: user.email, name: user.name, image: user.image }
+          }
+
+          const user = await verifyCredentials(email, password)
+          if (!user) return null
           return { id: user.id, email: user.email, name: user.name, image: user.image }
+        } catch (err) {
+          console.error('[auth] authorize failed:', err)
+          return null
         }
-
-        const user = await verifyCredentials(email, password)
-        if (!user) return null
-        return { id: user.id, email: user.email, name: user.name, image: user.image }
       },
     }),
   ],
