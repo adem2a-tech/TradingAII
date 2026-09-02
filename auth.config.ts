@@ -6,6 +6,11 @@ export const authConfig = {
   session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
   providers: [],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      if (new URL(url).origin === baseUrl) return url
+      return `${baseUrl}/analyze`
+    },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id!

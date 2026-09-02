@@ -2,14 +2,12 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { signIn, useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { getSession, signIn, useSession } from 'next-auth/react'
 import { Loader2 } from 'lucide-react'
 import { useToast } from '@/components/toast'
 import { loadDeviceProfile, saveDeviceProfile } from '@/lib/storage/device-profile'
 
 export function LoginForm() {
-  const router = useRouter()
   const { toast } = useToast()
   const { data: session, status } = useSession()
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -21,7 +19,7 @@ export function LoginForm() {
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
-      router.replace('/analyze')
+      window.location.replace('/analyze')
       return
     }
     const profile = loadDeviceProfile()
@@ -31,7 +29,7 @@ export function LoginForm() {
       setReturningName(profile.name.split(' ')[0])
       setMode('login')
     }
-  }, [status, session, router])
+  }, [status, session])
 
   const submitCredentials = async () => {
     if (!email || !password) {
@@ -55,8 +53,8 @@ export function LoginForm() {
     const displayName = name || email.split('@')[0]
     saveDeviceProfile({ email, name: displayName })
     toast(`Bonjour ${displayName} ! 👋`)
-    router.push('/analyze')
-    router.refresh()
+    await getSession()
+    window.location.assign('/analyze')
   }
 
   return (

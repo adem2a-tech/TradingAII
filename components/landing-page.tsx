@@ -1,8 +1,9 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -117,6 +118,7 @@ function GoogleReviewsSlider({ reviews }: { reviews: ReviewItem[] }) {
 }
 
 export function LandingPage() {
+  const router = useRouter()
   const { status } = useSession()
   const ctaHref = status === 'authenticated' ? '/analyze' : '/login'
   const reviews = useMemo(() => generateGoogleReviews(15), [])
@@ -125,6 +127,12 @@ export function LandingPage() {
     document.body.classList.add('landing-active')
     return () => document.body.classList.remove('landing-active')
   }, [])
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/analyze')
+    }
+  }, [status, router])
 
   return (
     <div className="lp">

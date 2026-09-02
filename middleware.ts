@@ -12,6 +12,11 @@ export default auth((req) => {
   const isPublic = PUBLIC.some((p) => path === p) || PUBLIC_API.some((p) => path.startsWith(p))
   const isApi = path.startsWith('/api/')
 
+  // Connecté → app (évite de rester bloqué sur la landing après login)
+  if (req.auth && (path === '/' || path === '/login')) {
+    return NextResponse.redirect(new URL('/analyze', req.url))
+  }
+
   if (!req.auth && !isPublic) {
     if (isApi) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     return NextResponse.redirect(new URL('/', req.url))
