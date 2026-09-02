@@ -1,11 +1,10 @@
 import Stripe from 'stripe'
+import { getStripeSecret } from './stripe/env'
 
 let cachedPriceId: string | null = null
 
 export function getStripe() {
-  const key = process.env.STRIPE_SECRET_KEY
-  if (!key) throw new Error('Paiement indisponible — STRIPE_SECRET_KEY manquante dans .env.local')
-  return new Stripe(key)
+  return new Stripe(getStripeSecret())
 }
 
 export function getAppUrl() {

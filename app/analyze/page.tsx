@@ -152,7 +152,7 @@ export default function HomePage() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Erreur paiement'
       toast(msg)
-      if (msg.includes('STRIPE_SECRET_KEY')) setShowStripeHelp(true)
+      if (msg.includes('STRIPE_SECRET_KEY') || msg.includes('Paiement indisponible')) setShowStripeHelp(true)
       setSubLoading(false)
     }
   }
