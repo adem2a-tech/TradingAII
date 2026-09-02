@@ -20,6 +20,10 @@ const display = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: 'TradeAI — IA de trading',
   description: 'Analyse de graphiques par IA avec gestion du risque.',
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    apple: [{ url: '/apple-icon.svg', type: 'image/svg+xml', sizes: '180x180' }],
+  },
 }
 
 export const viewport: Viewport = {
