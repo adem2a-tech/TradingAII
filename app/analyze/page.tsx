@@ -10,7 +10,6 @@ import { TradingViewLinkInput } from '@/components/tradingview-link'
 import { ResultCard } from '@/components/result-card'
 import { WelcomeModal, PlanBadge } from '@/components/subscription-bar'
 import { ProPopups, LimitBlockModal } from '@/components/pro-popups'
-import { StripeSetupHelp } from '@/components/stripe-setup-help'
 import { DashboardPanel } from '@/components/tabs/dashboard-journal'
 import { LeaderboardPanel } from '@/components/tabs/leaderboard-panel'
 import { SettingsPanel } from '@/components/tabs/settings-panel'
@@ -20,6 +19,7 @@ import { useSync } from '@/components/sync-indicator'
 import { CATEGORY_LABELS, getInstrumentsByCategory, TIMEFRAMES } from '@/lib/assets'
 import type { AccessStatus } from '@/lib/access/types'
 import { loadPrefs, savePrefs, loadDeviceProfile, rememberUser } from '@/lib/storage/user-prefs'
+import { openProWhatsApp } from '@/lib/pro-contact'
 import type { AnalysisRecord, AssetCategory, Timeframe, TradingViewContext } from '@/lib/types'
 
 export default function HomePage() {
@@ -37,12 +37,10 @@ export default function HomePage() {
   const [balance, setBalance] = useState('10000')
   const [riskPercent, setRiskPercent] = useState('1')
   const [loading, setLoading] = useState(false)
-  const [subLoading, setSubLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<AnalysisRecord | null>(null)
   const [access, setAccess] = useState<AccessStatus | null>(null)
   const [welcome, setWelcome] = useState<string | null>(null)
-  const [showStripeHelp, setShowStripeHelp] = useState(false)
   const [showLimit, setShowLimit] = useState(false)
   const [promoModal, setPromoModal] = useState(false)
   const [canForce, setCanForce] = useState(false)
@@ -142,20 +140,8 @@ export default function HomePage() {
     await refreshAccess(true)
   }
 
-  const handleSubscribe = async () => {
-    setSubLoading(true)
-    try {
-      toast('Génération du lien de paiement...')
-      const res = await fetch('/api/stripe/checkout', { method: 'POST', cache: 'no-store' })
-      const data = await res.json()
-      if (!res.ok || !data.url) throw new Error(data.error || 'Lien de paiement indisponible')
-      window.location.assign(data.url)
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Erreur paiement'
-      toast(msg)
-      if (msg.includes('STRIPE_SECRET_KEY') || msg.includes('Paiement indisponible')) setShowStripeHelp(true)
-      setSubLoading(false)
-    }
+  const handleSubscribe = () => {
+    openProWhatsApp()
   }
 
   const analyze = async (opts?: { force?: boolean }) => {
@@ -207,7 +193,6 @@ export default function HomePage() {
       <Header
         access={access}
         onSubscribe={handleSubscribe}
-        subLoading={subLoading}
         activeTab={tab}
         onTabChange={setTab}
       />
@@ -271,7 +256,6 @@ export default function HomePage() {
           )}
         </div>
 
-        {showStripeHelp && <StripeSetupHelp onClose={() => setShowStripeHelp(false)} />}
 
         <div key={tab} className="page-tab-body tab-switch-enter">
         {tab === 'analyze' && (
@@ -349,7 +333,7 @@ export default function HomePage() {
                     </button>
                     {access && !access.canAnalyze && !access.isPro && !access.isLifetime && (
                       <p className="analyze-limit-upsell">
-                        <button type="button" onClick={() => setTab('pro')}>Passer au Pro</button>
+                        <button type="button" onClick={handleSubscribe}>Passer au Pro</button>
                         <span>— trader et analyser à l&apos;infini, accès à vie</span>
                       </p>
                     )}
@@ -368,7 +352,6 @@ export default function HomePage() {
             onSubscribe={handleSubscribe}
             onPromo={handlePromo}
             onPromoModal={() => setPromoModal(true)}
-            loading={subLoading}
             isPro={access?.isPro}
             isLifetime={access?.isLifetime}
           />

@@ -2,11 +2,11 @@
 
 import { Check, Minus } from 'lucide-react'
 import { PRO_PRICE_LABEL } from '@/lib/access/types'
+import { openProWhatsApp } from '@/lib/pro-contact'
 
 type Props = {
   onSubscribe?: () => void
   onPromoSubmit?: (code: string) => void
-  loading?: boolean
   isProActive?: boolean
   isLifetime?: boolean
   promoCode?: string
@@ -29,19 +29,19 @@ const PRO_BULLETS = [
   '1 compte TradeAI Pro',
   'Lecture IA de tes captures TradingView',
   'Dashboard, classement & outils pro',
-  'Paiement unique — pas de renouvellement',
+  'Contact WhatsApp · activation rapide',
 ]
 
 export function SpotifyPricing({
   onSubscribe,
   onPromoSubmit,
-  loading = false,
   isProActive = false,
   isLifetime = false,
   promoCode = '',
   onPromoCodeChange,
 }: Props) {
   const hasPro = isProActive || isLifetime
+  const goPro = () => (onSubscribe ? onSubscribe() : openProWhatsApp())
 
   return (
     <section className="sp-premium">
@@ -51,18 +51,17 @@ export function SpotifyPricing({
         {!hasPro ? (
           <>
             <p className="sp-hero-lead">
-              Débloque tout pour <strong>{PRO_PRICE_LABEL}</strong> — un seul paiement, accès à vie.
+              Débloque tout pour <strong>{PRO_PRICE_LABEL}</strong> — contacte-nous sur WhatsApp, activation immédiate.
             </p>
             <button
               type="button"
               className="sp-hero-cta"
-              onClick={onSubscribe}
-              disabled={loading}
+              onClick={goPro}
             >
-              {loading ? 'Redirection…' : `Passer Pro · ${PRO_PRICE_LABEL}`}
+              Passer Pro · WhatsApp
             </button>
             <p className="sp-hero-note">
-              Paiement unique · pas d&apos;abonnement · code promo disponible
+              Message pré-rempli · {PRO_PRICE_LABEL} · code promo disponible
             </p>
           </>
         ) : (
@@ -122,19 +121,17 @@ export function SpotifyPricing({
           <button
             type="button"
             className="sp-card-btn sp-card-btn-primary"
-            onClick={onSubscribe}
-            disabled={loading || hasPro}
+            onClick={goPro}
+            disabled={hasPro}
           >
             {isLifetime
               ? 'Accès à vie actif ✓'
               : isProActive
                 ? 'Pro actif ✓'
-                : loading
-                  ? 'Redirection…'
-                  : `Débloquer Pro · ${PRO_PRICE_LABEL}`}
+                : `Débloquer Pro · WhatsApp`}
           </button>
           <p className="sp-card-legal">
-            {PRO_PRICE_LABEL} en une fois. Accès à vie. Offre soumise aux conditions générales TradeAI.
+            {PRO_PRICE_LABEL} · contact WhatsApp · offre soumise aux conditions TradeAI.
           </p>
         </article>
 

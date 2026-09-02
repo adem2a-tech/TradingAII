@@ -145,14 +145,12 @@ export function ProPanel({
   onSubscribe,
   onPromo,
   onPromoModal,
-  loading,
   isPro,
   isLifetime,
 }: {
   onSubscribe: () => void
   onPromo: (code: string) => void
   onPromoModal?: () => void
-  loading?: boolean
   isPro?: boolean
   isLifetime?: boolean
 }) {
@@ -161,7 +159,6 @@ export function ProPanel({
   return (
     <div className="tab-panel fade-in pro-pricing-tab">
       <SpotifyPricing
-        loading={loading}
         isProActive={isPro}
         isLifetime={isLifetime}
         onSubscribe={onSubscribe}

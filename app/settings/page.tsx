@@ -1,38 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { signOut, useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { CreditCard, Crown, LogOut } from 'lucide-react'
+import { Crown, LogOut } from 'lucide-react'
 import { Header } from '@/components/header'
-import { useToast } from '@/components/toast'
 import type { AccessStatus } from '@/lib/access/types'
+import { openProWhatsApp } from '@/lib/pro-contact'
 
 export default function SettingsPage() {
-  const router = useRouter()
-  const { toast } = useToast()
   const { data: session } = useSession()
   const [access, setAccess] = useState<AccessStatus | null>(null)
-  const [sub, setSub] = useState<{ status: string; currentPeriodEnd: string; cancelAtPeriodEnd: boolean } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/stripe/portal')
+    fetch('/api/access/promo', { cache: 'no-store' })
       .then((r) => r.json())
-      .then((d) => {
-        if (d.access) setAccess(d.access)
-        if (d.subscription) setSub(d.subscription)
-      })
+      .then((d) => { if (d.plan) setAccess(d) })
       .finally(() => setLoading(false))
   }, [])
-
-  const openPortal = async () => {
-    const res = await fetch('/api/stripe/portal', { method: 'POST' })
-    const data = await res.json()
-    if (data.url) window.location.assign(data.url)
-    else toast(data.error || 'Aucun abonnement')
-  }
 
   const logout = async () => {
     await signOut({ callbackUrl: '/' })
@@ -53,7 +38,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <Header access={access} />
+      <Header access={access} onSubscribe={openProWhatsApp} />
       <main className="page settings-page">
         <h1>Paramètres</h1>
         {session?.user && (
@@ -63,28 +48,18 @@ export default function SettingsPage() {
         <section className="settings-card neon-card">
           <div className="settings-head"><Crown size={18} /> Plan</div>
           {access?.isLifetime && <p className="plan-status lifetime">Accès à vie activé</p>}
-          {access?.isPro && (
+          {access?.isPro && !access?.isLifetime && (
             <>
-              <p className="plan-status pro">Pro actif · analyses illimitées · 79€</p>
-              {sub ? (
-                <>
-                  <p className="plan-detail">
-                    {sub.cancelAtPeriodEnd ? 'Expire le' : 'Renouvellement le'}{' '}
-                    {new Date(sub.currentPeriodEnd).toLocaleDateString('fr-FR')}
-                  </p>
-                  <button type="button" className="btn-outline" onClick={openPortal}>
-                    <CreditCard size={16} /> Gérer paiement
-                  </button>
-                </>
-              ) : (
-                <p className="plan-detail">Paiement unique · accès Pro permanent</p>
-              )}
+              <p className="plan-status pro">Pro actif · analyses illimitées</p>
+              <p className="plan-detail">Accès Pro permanent</p>
             </>
           )}
           {!access?.isPro && !access?.isLifetime && (
             <>
               <p className="plan-status free">Gratuit · 1 analyse / 3 jours</p>
-              <Link href="/analyze" className="btn-primary sm">Passer Pro · 79€</Link>
+              <button type="button" className="btn-primary sm" onClick={openProWhatsApp}>
+                Passer Pro · WhatsApp
+              </button>
             </>
           )}
         </section>

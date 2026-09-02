@@ -71,8 +71,8 @@ export function ProPopups({ access, onSubscribe, onPromo }: Props) {
         <div className="popup-neon side">
           <Crown size={20} className="neon-icon" />
           <strong>{msg}</strong>
-          <p>{PRO_PRICE_LABEL} · paiement unique · code promo disponible</p>
-          <button type="button" className="btn-primary sm" onClick={onSubscribe}>Passer Pro →</button>
+          <p>{PRO_PRICE_LABEL} · WhatsApp · code promo disponible</p>
+          <button type="button" className="btn-primary sm" onClick={onSubscribe}>Passer Pro · WhatsApp →</button>
           <button type="button" className="link-sm" onClick={onPromo}>J&apos;ai un code promo</button>
           <button type="button" className="popup-x" onClick={() => setSide(false)}><X size={14} /></button>
         </div>
@@ -90,7 +90,7 @@ export function LimitBlockModal({ access, onSubscribe, onClose }: { access: Acce
         <h2>Limite atteinte</h2>
         <p className="wait-msg">{access.waitMessage}</p>
         <p className="sub-text">Plan gratuit : 1 analyse tous les 3 jours.</p>
-        <button type="button" className="btn-primary" onClick={onSubscribe}>Passer Pro · {PRO_PRICE_LABEL} →</button>
+        <button type="button" className="btn-primary" onClick={onSubscribe}>Passer Pro · WhatsApp →</button>
         <button type="button" className="btn-ghost-sm" onClick={onClose}>Fermer</button>
       </div>
     </div>

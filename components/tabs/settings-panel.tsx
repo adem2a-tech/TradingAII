@@ -4,7 +4,6 @@ import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { CreditCard, Crown, LogOut, Settings, Shield } from 'lucide-react'
 import type { AccessStatus } from '@/lib/access/types'
-import { PRO_PRICE_LABEL } from '@/lib/access/types'
 
 type Props = {
   access?: AccessStatus | null
@@ -42,7 +41,7 @@ export function SettingsPanel({ access, onSubscribe }: Props) {
               <p className="plan-status free">Gratuit · 1 analyse / 3 jours</p>
               {onSubscribe && (
                 <button type="button" className="btn-primary sm" onClick={onSubscribe}>
-                  Passer Pro · {PRO_PRICE_LABEL}
+                  Passer Pro · WhatsApp
                 </button>
               )}
             </>

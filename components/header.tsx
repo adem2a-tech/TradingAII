@@ -26,12 +26,11 @@ const MOBILE_TABS: HomeTab[] = ['analyze', 'dashboard', 'leaderboard', 'pro', 's
 type Props = {
   access?: AccessStatus | null
   onSubscribe?: () => void
-  subLoading?: boolean
   activeTab?: HomeTab
   onTabChange?: (tab: HomeTab) => void
 }
 
-export function Header({ access, onSubscribe, subLoading, activeTab, onTabChange }: Props) {
+export function Header({ access, onSubscribe, activeTab, onTabChange }: Props) {
   const path = usePathname()
   const { data: session, status } = useSession()
   const showSub = access && !access.isPro && !access.isLifetime
@@ -79,8 +78,8 @@ export function Header({ access, onSubscribe, subLoading, activeTab, onTabChange
           )}
 
           {showSub && onSubscribe ? (
-            <button type="button" className="nav-cta neon-btn nav-link-fx nav-desktop-only" onClick={onSubscribe} disabled={subLoading}>
-              {subLoading ? <span className="pulse-dot" /> : `Pro ${PRO_PRICE_LABEL}`}
+            <button type="button" className="nav-cta neon-btn nav-link-fx nav-desktop-only" onClick={onSubscribe}>
+              Pro {PRO_PRICE_LABEL}
             </button>
           ) : !isApp ? (
             <Link href="/analyze" className="nav-cta neon-btn nav-link-fx nav-desktop-only">Analyser →</Link>
