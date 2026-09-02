@@ -20,8 +20,8 @@ export function SettingsPanel({ access, onSubscribe }: Props) {
 
   return (
     <div className="tab-panel fade-in settings-tab">
-      <div className="settings-tab-head neon-card">
-        <Settings size={22} className="text-cyan-400" />
+      <div className="settings-tab-head">
+        <Settings size={24} className="text-cyan-400 shrink-0" />
         <div>
           <h2>Paramètres</h2>
           {session?.user && (
@@ -30,36 +30,38 @@ export function SettingsPanel({ access, onSubscribe }: Props) {
         </div>
       </div>
 
-      <section className="settings-card neon-card">
-        <div className="settings-head"><Crown size={18} /> Plan</div>
-        {access?.isLifetime && <p className="plan-status lifetime">Accès à vie activé</p>}
-        {access?.isPro && !access?.isLifetime && (
-          <p className="plan-status pro">Pro actif · analyses illimitées</p>
-        )}
-        {!access?.isPro && !access?.isLifetime && (
-          <>
-            <p className="plan-status free">Gratuit · 1 analyse / 3 jours</p>
-            {onSubscribe && (
-              <button type="button" className="btn-primary sm" onClick={onSubscribe}>
-                Passer Pro · {PRO_PRICE_LABEL}
-              </button>
-            )}
-          </>
-        )}
-      </section>
+      <div className="settings-stack">
+        <section className="settings-card settings-card-plan">
+          <div className="settings-head"><Crown size={18} /> Plan</div>
+          {access?.isLifetime && <p className="plan-status lifetime">Accès à vie activé</p>}
+          {access?.isPro && !access?.isLifetime && (
+            <p className="plan-status pro">Pro actif · analyses illimitées</p>
+          )}
+          {!access?.isPro && !access?.isLifetime && (
+            <>
+              <p className="plan-status free">Gratuit · 1 analyse / 3 jours</p>
+              {onSubscribe && (
+                <button type="button" className="btn-primary sm" onClick={onSubscribe}>
+                  Passer Pro · {PRO_PRICE_LABEL}
+                </button>
+              )}
+            </>
+          )}
+        </section>
 
-      <section className="settings-card neon-card">
-        <div className="settings-head"><Shield size={18} /> Sécurité</div>
-        <p className="plan-detail">Session chiffrée · données isolées par compte</p>
-        <button type="button" className="btn-ghost-logout" onClick={logout}>
-          <LogOut size={16} /> Déconnexion
-        </button>
-      </section>
+        <section className="settings-card">
+          <div className="settings-head"><Shield size={18} /> Sécurité</div>
+          <p className="plan-detail">Session chiffrée · données isolées par compte</p>
+          <button type="button" className="btn-ghost-logout" onClick={logout}>
+            <LogOut size={16} /> Déconnexion
+          </button>
+        </section>
 
-      <section className="settings-card neon-card">
-        <div className="settings-head"><CreditCard size={18} /> Plus</div>
-        <Link href="/history" className="btn-ghost-sm">Historique complet →</Link>
-      </section>
+        <section className="settings-card">
+          <div className="settings-head"><CreditCard size={18} /> Plus</div>
+          <Link href="/history" className="btn-ghost-sm">Historique complet →</Link>
+        </section>
+      </div>
     </div>
   )
 }
