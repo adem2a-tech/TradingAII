@@ -118,6 +118,16 @@ export default function HomePage() {
     if (list[0]) setInstrument(list[0].id)
   }
 
+  const resetAnalyze = () => {
+    setResult(null)
+    setFile(null)
+    setFileCapturedAt(null)
+    setError(null)
+    setCanForce(false)
+    setForceConfirm(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const handlePromo = async (code: string) => {
     const res = await fetch('/api/access/promo', {
       method: 'POST',
@@ -251,6 +261,13 @@ export default function HomePage() {
             <PlanBadge status={access} />
           </div>
           <h1>TRADE<span className="accent-text">AI</span></h1>
+          {tab === 'analyze' && (
+            <div className="analyze-toolbar">
+              <button type="button" className="btn-back" onClick={resetAnalyze}>
+                ← Nouvelle analyse
+              </button>
+            </div>
+          )}
         </div>
 
         {showStripeHelp && <StripeSetupHelp onClose={() => setShowStripeHelp(false)} />}
@@ -259,7 +276,6 @@ export default function HomePage() {
         {tab === 'analyze' && (
           result ? (
             <div className="result-section fade-in">
-              <button type="button" className="btn-back" onClick={() => setResult(null)}>← Nouvelle analyse</button>
               <ResultCard
                 data={result}
                 onForceTrade={() => setForceConfirm(true)}
@@ -326,9 +342,17 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="risk-box"><span>Risque max</span><strong>€{riskPreview.toFixed(2)}</strong></div>
-                  <button type="button" className="btn-primary" onClick={analyze} disabled={loading || (access !== null && !access.canAnalyze)}>
-                    {loading ? <><Loader2 size={18} className="spin" /> Analyse...</> : access && !access.canAnalyze ? 'LIMITE ATTEINTE' : 'ANALYSER →'}
-                  </button>
+                  <div className="analyze-submit-wrap">
+                    <button type="button" className="btn-primary" onClick={analyze} disabled={loading || (access !== null && !access.canAnalyze)}>
+                      {loading ? <><Loader2 size={18} className="spin" /> Analyse...</> : access && !access.canAnalyze ? 'LIMITE ATTEINTE' : 'ANALYSER →'}
+                    </button>
+                    {access && !access.canAnalyze && !access.isPro && !access.isLifetime && (
+                      <p className="analyze-limit-upsell">
+                        <button type="button" onClick={() => setTab('pro')}>Passer au Pro</button>
+                        <span>— trader et analyser à l&apos;infini, accès à vie</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
