@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const form = await req.formData()
     const forceTrade = form.get('forceTrade') === 'true'
 
-    const access = await canUserAnalyze(userId)
+    const access = await canUserAnalyze(userId, session.user.email)
     if (!access.canAnalyze) {
       return NextResponse.json({
         error: access.waitMessage || 'Limite : 1 analyse / 3 jours. Passe Pro ou entre un code promo.',

@@ -88,3 +88,16 @@ export async function verifyCredentials(email: string, password: string): Promis
   if (!(await checkPassword(password, user.passwordHash))) return null
   return user
 }
+
+export async function updateUserAccess(
+  userId: string,
+  data: Pick<UserRecord, 'plan' | 'stripeCustomerId' | 'promoCode'>,
+): Promise<UserRecord | null> {
+  const user = await findUserById(userId)
+  if (!user) return null
+  if (data.plan !== undefined) user.plan = data.plan
+  if (data.stripeCustomerId !== undefined) user.stripeCustomerId = data.stripeCustomerId
+  if (data.promoCode !== undefined) user.promoCode = data.promoCode
+  await save(user)
+  return user
+}

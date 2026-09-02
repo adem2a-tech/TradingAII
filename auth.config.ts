@@ -13,10 +13,13 @@ export const authConfig = {
       if (new URL(url).origin === baseUrl) return url
       return `${baseUrl}/analyze`
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.sub = user.id!
         token.name = user.name
+      }
+      if (trigger === 'update' && session?.plan) {
+        token.plan = session.plan as typeof token.plan
       }
       return token
     },
@@ -24,6 +27,7 @@ export const authConfig = {
       if (session.user && token.sub) {
         session.user.id = token.sub
         session.user.name = (token.name as string) || session.user.name
+        if (token.plan) session.user.plan = token.plan
       }
       return session
     },

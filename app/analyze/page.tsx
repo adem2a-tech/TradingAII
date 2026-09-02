@@ -137,8 +137,9 @@ export default function HomePage() {
     const data = await res.json()
     if (!res.ok) { toast(data.message || data.error); return }
     setWelcome(data.message)
+    if (data.access) setAccess(data.access)
     toast('Code promo activé ✓')
-    await refreshAccess()
+    await refreshAccess(true)
   }
 
   const handleSubscribe = async () => {

@@ -4,6 +4,9 @@ import { getStripe } from '../stripe'
 import type { AccessRecord, AccessStatus } from './types'
 import { FREE_COOLDOWN_MS, PROMO_CODE, formatWaitUntil } from './types'
 import { getDataSubdir } from '../storage/data-root'
+import { setAccessPlanCookie } from './plan-cookie'
+import { resolveAccessRecord } from './resolve'
+import { updateUserAccess } from '../auth/store'
 
 const DIR = getDataSubdir('access')
 
@@ -34,6 +37,38 @@ export async function getAccess(userId: string): Promise<AccessRecord> {
 
 async function saveAccess(record: AccessRecord) {
   await fs.writeFile(filePath(record.userId), JSON.stringify(record, null, 2), 'utf-8')
+}
+
+async function loadResolvedAccess(userId: string, email?: string | null): Promise<AccessRecord> {
+  let record = await getAccess(userId)
+  record = await resolveAccessRecord({ record, email })
+  if (record.plan !== 'free') await saveAccess(record)
+  return record
+}
+
+export async function persistLifetimeAccess(
+  userId: string,
+  opts: { stripeCustomerId?: string; promoCode?: string; email?: string | null } = {},
+) {
+  const record = await getAccess(userId)
+  record.plan = 'lifetime'
+  record.proExpiresAt = null
+  record.stripeSubscriptionId = undefined
+  if (opts.stripeCustomerId) record.stripeCustomerId = opts.stripeCustomerId
+  if (opts.promoCode) record.promoCode = opts.promoCode
+  await saveAccess(record)
+  await setAccessPlanCookie({
+    userId,
+    plan: 'lifetime',
+    stripeCustomerId: opts.stripeCustomerId,
+    promoCode: opts.promoCode,
+  })
+  await updateUserAccess(userId, {
+    plan: 'lifetime',
+    stripeCustomerId: opts.stripeCustomerId,
+    promoCode: opts.promoCode,
+  }).catch(() => {})
+  return record
 }
 
 async function syncProWithStripe(record: AccessRecord): Promise<AccessRecord> {
@@ -102,8 +137,8 @@ export function buildStatus(record: AccessRecord): AccessStatus {
   }
 }
 
-export async function canUserAnalyze(userId: string) {
-  let record = await getAccess(userId)
+export async function canUserAnalyze(userId: string, email?: string | null) {
+  let record = await loadResolvedAccess(userId, email)
   if (record.plan === 'pro') record = await syncProWithStripe(record)
   return buildStatus(record)
 }
@@ -129,9 +164,7 @@ export async function redeemPromo(userId: string, code: string) {
   if (record.plan === 'pro') {
     return { ok: false, message: 'Accès Pro déjà actif sur ce compte.' }
   }
-  record.plan = 'lifetime'
-  record.promoCode = normalized
-  await saveAccess(record)
+  await persistLifetimeAccess(userId, { promoCode: normalized })
   return {
     ok: true,
     message: 'Bienvenue dans TradeAI Pro à vie ! Analyses illimitées — bon trading !',
@@ -139,12 +172,7 @@ export async function redeemPromo(userId: string, code: string) {
 }
 
 export async function activateLifetimePurchase(userId: string, stripeCustomerId: string) {
-  const record = await getAccess(userId)
-  record.plan = 'lifetime'
-  record.stripeCustomerId = stripeCustomerId
-  record.stripeSubscriptionId = undefined
-  record.proExpiresAt = null
-  await saveAccess(record)
+  await persistLifetimeAccess(userId, { stripeCustomerId })
 }
 
 export async function activatePro(userId: string, stripeCustomerId: string, stripeSubscriptionId?: string) {
@@ -163,6 +191,12 @@ export async function activatePro(userId: string, stripeCustomerId: string, stri
     record.proExpiresAt = null
   }
   await saveAccess(record)
+  await setAccessPlanCookie({
+    userId,
+    plan: 'pro',
+    stripeCustomerId,
+  })
+  await updateUserAccess(userId, { plan: 'pro', stripeCustomerId }).catch(() => {})
 }
 
 export async function deactivatePro(userId: string) {

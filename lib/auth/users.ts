@@ -8,6 +8,9 @@ export type UserRecord = {
   image?: string
   provider?: 'credentials' | 'google' | 'apple'
   createdAt: string
+  plan?: 'free' | 'pro' | 'lifetime'
+  stripeCustomerId?: string
+  promoCode?: string
 }
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
@@ -33,4 +36,12 @@ export async function upsertOAuthUser(params: { email: string; name: string; ima
 export async function verifyCredentials(email: string, password: string): Promise<UserRecord | null> {
   const { verifyCredentials: verify } = await import('./store')
   return verify(email, password)
+}
+
+export async function updateUserAccess(
+  userId: string,
+  data: Pick<UserRecord, 'plan' | 'stripeCustomerId' | 'promoCode'>,
+) {
+  const { updateUserAccess: update } = await import('./store')
+  return update(userId, data)
 }
