@@ -3,6 +3,7 @@ import { promisify } from 'util'
 import { promises as fs } from 'fs'
 import path from 'path'
 import type { UserRecord } from './users'
+import { isValidEmail } from './validate-email'
 import { getDataSubdir } from '../storage/data-root'
 
 const scryptAsync = promisify(scrypt)
@@ -52,6 +53,7 @@ async function save(user: UserRecord) {
 }
 
 export async function createUser(data: Omit<UserRecord, 'id' | 'createdAt'> & { password?: string }): Promise<UserRecord> {
+  if (!isValidEmail(data.email)) throw new Error('Email invalide')
   if (await findUserByEmail(data.email)) throw new Error('Email déjà utilisé')
   if (data.password && data.password.length < 8) throw new Error('Mot de passe : 8 caractères minimum')
 

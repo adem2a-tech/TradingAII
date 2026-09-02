@@ -6,10 +6,12 @@ import { useSearchParams } from 'next/navigation'
 import { signIn, useSession } from 'next-auth/react'
 import { Loader2 } from 'lucide-react'
 import { useToast } from '@/components/toast'
+import { isValidEmail } from '@/lib/auth/validate-email'
 import { loadDeviceProfile, saveDeviceProfile } from '@/lib/storage/device-profile'
 
 function safeCallback(raw: string | null) {
   if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return '/analyze'
+  if (raw.startsWith('/login')) return '/analyze'
   return raw
 }
 
@@ -26,6 +28,11 @@ export function LoginForm() {
   const [returningName, setReturningName] = useState<string | null>(null)
 
   useEffect(() => {
+    if (searchParams.get('error') !== 'CredentialsSignin') return
+    toast('Email ou mot de passe incorrect — vérifie tes identifiants')
+  }, [searchParams])
+
+  useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       window.location.replace(callbackUrl)
       return
@@ -40,39 +47,34 @@ export function LoginForm() {
   }, [status, session, callbackUrl])
 
   const submitCredentials = async () => {
-    if (!email || !password) {
+    const trimmedEmail = email.trim()
+
+    if (!trimmedEmail || !password) {
       toast('Email et mot de passe requis')
+      return
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      toast('Email invalide — il faut une adresse avec @')
       return
     }
     if (mode === 'register' && password.length < 8) {
       toast('Mot de passe : 8 caractères minimum')
       return
     }
-    setLoading(true)
-    const displayName = name || email.split('@')[0]
 
-    const res = await signIn('credentials', {
-      email: email.trim(),
+    setLoading(true)
+    const displayName = name || trimmedEmail.split('@')[0]
+    saveDeviceProfile({ email: trimmedEmail, name: displayName })
+
+    // Redirect serveur NextAuth = cookie session posé avant d'aller sur /analyze
+    await signIn('credentials', {
+      email: trimmedEmail,
       password,
       name,
       action: mode,
-      redirect: false,
       callbackUrl,
+      redirect: true,
     })
-
-    if (res?.error) {
-      setLoading(false)
-      toast(
-        mode === 'register'
-          ? 'Inscription impossible — email déjà pris ou erreur serveur'
-          : 'Email ou mot de passe incorrect',
-      )
-      return
-    }
-
-    saveDeviceProfile({ email: email.trim(), name: displayName })
-    toast(`Bonjour ${displayName} ! 👋`)
-    window.location.assign(res?.url ?? callbackUrl)
   }
 
   return (
@@ -98,7 +100,17 @@ export function LoginForm() {
           {mode === 'register' && (
             <label>Prénom<input value={name} onChange={(e) => setName(e.target.value)} placeholder="Jordan" autoComplete="given-name" /></label>
           )}
-          <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="toi@email.com" autoComplete="email" /></label>
+          <label>
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="toi@email.com"
+              autoComplete="email"
+              inputMode="email"
+            />
+          </label>
           <label>Mot de passe<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="8 caractères min." autoComplete={mode === 'register' ? 'new-password' : 'current-password'} /></label>
         </div>
 

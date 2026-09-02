@@ -2,6 +2,7 @@ import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import { authConfig } from './auth.config'
 import { createUser, verifyCredentials } from '@/lib/auth/users'
+import { isValidEmail } from '@/lib/auth/validate-email'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -21,6 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const action = String(credentials?.action || 'login')
 
           if (!email || !password) return null
+          if (!isValidEmail(email)) return null
 
           if (action === 'register') {
             const name = String(credentials?.name || '')

@@ -12,9 +12,13 @@ export default auth((req) => {
   const isPublic = PUBLIC.some((p) => path === p) || PUBLIC_API.some((p) => path.startsWith(p))
   const isApi = path.startsWith('/api/')
 
-  // Connecté → app (évite de rester bloqué sur la landing après login)
+  // Connecté → app
   if (req.auth && (path === '/' || path === '/login')) {
-    return NextResponse.redirect(new URL('/analyze', req.url))
+    const dest = req.nextUrl.searchParams.get('callbackUrl')
+    const target = dest && dest.startsWith('/') && !dest.startsWith('//') && !dest.startsWith('/login')
+      ? dest
+      : '/analyze'
+    return NextResponse.redirect(new URL(target, req.url))
   }
 
   if (!req.auth && !isPublic) {
