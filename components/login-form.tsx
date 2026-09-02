@@ -28,9 +28,15 @@ export function LoginForm() {
   const [returningName, setReturningName] = useState<string | null>(null)
 
   useEffect(() => {
-    if (searchParams.get('error') !== 'CredentialsSignin') return
-    toast('Email ou mot de passe incorrect — vérifie tes identifiants')
-  }, [searchParams])
+    const error = searchParams.get('error')
+    if (error === 'Configuration') {
+      toast('Config auth serveur — redeploy Vercel en cours, réessaie dans 1 min')
+      return
+    }
+    if (error === 'CredentialsSignin') {
+      toast('Email ou mot de passe incorrect — vérifie tes identifiants')
+    }
+  }, [searchParams, toast])
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
