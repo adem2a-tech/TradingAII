@@ -11,7 +11,35 @@ import {
 } from 'lucide-react'
 import { LiveVisitorsBadge } from '@/components/live-visitors-badge'
 import { TRADING_SESSION_DOTS } from '@/components/ui/map'
+import { FeatureCard3D } from '@/components/ui/feature-card-3d'
 import { generateGoogleReviews, GOOGLE_REVIEW_COUNT } from '@/lib/landing/google-reviews'
+
+const FEATURES = [
+  {
+    icon: <TrendingUp size={22} />,
+    title: 'Vérif marché live',
+    description: 'Chaque capture comparée au cours réel avant de trader.',
+    accent: 'cyan' as const,
+  },
+  {
+    icon: <BarChart3 size={22} />,
+    title: 'Price action pro',
+    description: 'Structure, momentum, SL/TP — méthode desk ADM.',
+    accent: 'violet' as const,
+  },
+  {
+    icon: <Shield size={22} />,
+    title: 'Risk engine',
+    description: 'Lot size auto selon balance et risque %.',
+    accent: 'emerald' as const,
+  },
+  {
+    icon: <Zap size={22} />,
+    title: 'Pro 79 € unique',
+    description: 'Analyses illimitées. Un paiement, accès à vie.',
+    accent: 'amber' as const,
+  },
+]
 
 const WorldMap = dynamic(
   () => import('@/components/ui/map').then((m) => m.WorldMap),
@@ -224,26 +252,15 @@ export function LandingPage() {
       <section id="features" className="lp-section">
         <h2 className="lp-section-title">Pourquoi <span className="neon-gradient-text">TradeAI</span> ?</h2>
         <div className="lp-features">
-          <div className="lp-feature">
-            <div className="lp-feature-icon"><TrendingUp size={22} /></div>
-            <h3>Vérif marché live</h3>
-            <p>Chaque capture comparée au cours réel avant de trader.</p>
-          </div>
-          <div className="lp-feature">
-            <div className="lp-feature-icon"><BarChart3 size={22} /></div>
-            <h3>Price action pro</h3>
-            <p>Structure, momentum, SL/TP — méthode desk ADM.</p>
-          </div>
-          <div className="lp-feature">
-            <div className="lp-feature-icon"><Shield size={22} /></div>
-            <h3>Risk engine</h3>
-            <p>Lot size auto selon balance et risque %.</p>
-          </div>
-          <div className="lp-feature">
-            <div className="lp-feature-icon"><Zap size={22} /></div>
-            <h3>Pro 79 € unique</h3>
-            <p>Analyses illimitées. Un paiement, accès à vie.</p>
-          </div>
+          {FEATURES.map((f) => (
+            <FeatureCard3D
+              key={f.title}
+              icon={f.icon}
+              title={f.title}
+              description={f.description}
+              accent={f.accent}
+            />
+          ))}
         </div>
       </section>
 
